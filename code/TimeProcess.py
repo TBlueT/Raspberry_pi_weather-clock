@@ -1,12 +1,15 @@
 import datetime as dt
 from img.opencv import number_img
-from PyQt5 import QtTest, QtCore
+from PyQt5 import QtTest, QtCore, QtWidgets
 class timerun(QtCore.QThread):
-    def __init__(self, MainWindow, wt , parent=None):
-        super(timerun, self).__init__(parent)
+    Set_Text = QtCore.pyqtSignal(str, str)
 
-        self.MainWindow = MainWindow
-        self.wt = wt
+    def __init__(self, parent=None):
+        super(timerun, self).__init__(parent)
+        self.processing = True
+
+        self.MainWindow = parent
+        self.wt = self.MainWindow.wt
         self.nimg = number_img()
         self.Day = []
         self.hour = []
@@ -16,15 +19,15 @@ class timerun(QtCore.QThread):
         self.img_count = 1
 
     def run(self):
-        while True:
+        while self.processing:
             time_now = dt.datetime.now()
 
             self.Day = [time_now.year] + [time_now.month] + [time_now.day]
             self.hour = [time_now.hour] + [time_now.minute] + [time_now.second]
 
             if self.Day[2] != self.Day_old:
-                self.MainWindow.time_Day.setText(
-                    str(self.Day[0]) + 'Year ' + str(self.Day[1]) + 'Month ' + str(self.Day[2]) + 'Day')
+                self.Set_Text.emit("time_Day",
+                                   F"{self.Day[0]}Year {self.Day[1]}Month {self.Day[2]}Day")
 
             self.Hour_process()
             self.Minute_process()
@@ -37,15 +40,13 @@ class timerun(QtCore.QThread):
 
     def Hour_process(self):
         if self.hour[0] != self.hour_old[0]:
-            self.MainWindow.Hour.setPixmap(self.nimg.printing(self.hour[0]))
+            self.MainWindow.Set_Pixmap("Hour", self.nimg.printing(self.hour[0]))
             for i in range(1, 8):
                 hour = self.hour[0] + i
-                getattr(self.MainWindow, 'time_T_' + str(i)).setText(
-                    ('0'+str(hour-24) if (hour > 23) else (str(hour) if (hour > 9) else '0'+str(hour))) + ":00")
-
+                self.Set_Text.emit(F"time_T_{i}", F"{'0' + str(hour - 24) if (hour > 23) else (str(hour) if (hour > 9) else '0' + str(hour))}:00")
     def Minute_process(self):
         if self.hour[1] != self.hour_old[1]:
-            self.MainWindow.Minute.setPixmap(self.nimg.printing(self.hour[1]))
+            self.MainWindow.Set_Pixmap("Minute", self.nimg.printing(self.hour[1]))
             if (self.wt.API_reconnect == False) and int(self.hour[1]%100/10) != int(self.hour_old[1]%100/10):
                 self.wt.start()
 
@@ -55,4 +56,5 @@ class timerun(QtCore.QThread):
 
     def Second_process(self):
         if self.hour[2] != self.hour_old[2]:
-            self.MainWindow.Second.setPixmap(self.nimg.printing(self.hour[2]))
+            self.MainWindow.Set_Pixmap("Second", self.nimg.printing(self.hour[2]))
+            #self.MainWindow.Second.reoaint()
