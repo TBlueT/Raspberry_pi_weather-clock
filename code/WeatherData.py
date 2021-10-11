@@ -1,5 +1,5 @@
 from PyQt5.QtGui import QPixmap
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from collections import OrderedDict
 import requests
 import json
@@ -7,6 +7,7 @@ import datetime as dt
 
 class Weather(QtCore.QThread):
     Set_Text = QtCore.pyqtSignal(str, str)
+    Set_Pixmap = QtCore.pyqtSignal(str, QtGui.QPixmap)
     Set_StyleSheet = QtCore.pyqtSignal(str, str)
 
     def __init__(self, parent=None):
@@ -23,6 +24,7 @@ class Weather(QtCore.QThread):
         self.data = OrderedDict()
         self.k2c = lambda k: k - 273.15
         self.API_reconnect = False
+
         self.time_T = [0, 0, 0, 0, 0, 0, 0]
         self.time_Temperature()
 
@@ -36,13 +38,13 @@ class Weather(QtCore.QThread):
             if self.data["timezone"] == "Asia/Seoul":
                 self.Set_Text.emit("Li_text", "위치: 대전")
                 self.Set_Text.emit("Description_Text", "날시: "+str(self.data['current']['weather'][0]['description']))
-                self.MainWindow.Set_Pixmap("weather_img", self.img_number(self.data['current']['weather'][0]['icon']))
+                self.Set_Pixmap.emit("weather_img", self.img_number(self.data['current']['weather'][0]['icon']))
                 self.Set_Text.emit("Temperature_Text", "온도: "+str(int(self.data['hourly'][0]['temp']))+"'C")
                 self.Set_Text.emit("Other_Text", '습도:'+str(self.data["current"]["humidity"])+'%'+'\n'+'풍향:'+str(self.data["current"]["wind_deg"])+"'"+'\n'+'풍속:'+str(self.data["current"]["wind_speed"])+'m/s')
 
                 for i in range(1, 8):
                     self.Set_Text.emit(F"time_T_n_{i}", str(int(self.data["hourly"][i]["temp"])) + "'C")
-                    self.MainWindow.Set_Pixmap(F"time_T_n_i_{i}", self.img_number(self.data["hourly"][i]["weather"][0]["icon"]))
+                    self.Set_Pixmap.emit(F"time_T_n_i_{i}", self.img_number(self.data["hourly"][i]["weather"][0]["icon"]))
 
             else:
                 self.API_reconnect = True
@@ -57,7 +59,7 @@ class Weather(QtCore.QThread):
             self.Set_Text.emit("Description_Text", "연결을 확인해 주세요")
             self.Set_Text.emit("Temperature_Text", '')
             self.Set_Text.emit("Other_Text", '')
-            self.MainWindow.Set_Pixmap("weather_img", QPixmap('img/Internet.png'))
+            self.Set_Pixmap.emit("weather_img", QPixmap('img/Internet.png'))
 
 
     def img_number(self, number):

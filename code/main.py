@@ -22,11 +22,15 @@ class mainWindow(QMainWindow, GUI_class):
         self.tP = timerun(self)
 
         self.tP.Set_Text.connect(self.Set_Text)
+        self.tP.Set_Pixmap.connect(self.Set_Pixmap)
         self.wt.Set_Text.connect(self.Set_Text)
+        self.wt.Set_Pixmap.connect(self.Set_Pixmap)
         self.wt.Set_StyleSheet.connect(self.Set_StyleSheet)
 
+    @pyqtSlot(str, QPixmap)
     def Set_Pixmap(self, object, data):
         getattr(self, object).setPixmap(data)
+        getattr(self, object).repaint()
 
     @pyqtSlot(str, str)
     def Set_Text(self, object, data):
