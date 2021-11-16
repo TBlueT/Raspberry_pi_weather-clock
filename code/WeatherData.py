@@ -20,7 +20,7 @@ class Weather(QtCore.QThread):
             setattr(self, i +'d', QPixmap('img/Weather/' + i + 'd.png'))
         for i in iconimg_name:
             setattr(self, i + 'n', QPixmap('img/Weather/' + i + 'n.png'))
-        self.API_address = 'https://api.openweathermap.org/data/2.5/onecall?lat=36.32&lon=127.34&units=metric&exclude=daily&appid=0f1315f6157ab87ca9cad438062c6a0b&lang=kr'
+        self.API_address = 'Your openweathermap API'
         self.data = OrderedDict()
         self.k2c = lambda k: k - 273.15
         self.API_reconnect = False
